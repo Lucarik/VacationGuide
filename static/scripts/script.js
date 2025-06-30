@@ -37,7 +37,7 @@ async function fetchPlaces(location, type) {
 }
 // Call ChatGPT to get a description and rating for each location
 async function enrichPlace(element, type) {
-    console.log(element);
+    //console.log(element);
     const name = element.tags?.name || "Unnamed";
     const descResponse = await fetch("/api/description", {
         method: "POST",
