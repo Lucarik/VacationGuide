@@ -227,7 +227,7 @@ span {
     font-size: 1rem;
     font-weight: 500;
     color: #fff;
-    background: linear-gradient(135deg, #4CAF50, #45A049);
+    background: linear-gradient(135deg, #0077b6, #1d93d2);
     border: none;
     border-radius: 8px;
     cursor: pointer;
@@ -236,7 +236,7 @@ span {
 }
 
 .show-more-btn:hover {
-    background: linear-gradient(135deg, #45A049, #4CAF50);
+    background: linear-gradient(135deg, #01669d, #1d7db1);
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(0,0,0,0.15);
 }

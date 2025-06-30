@@ -7,7 +7,7 @@ app = Flask(__name__)
 def index():
     return render_template("index.html")
 
-@app.route("/nearby_places", methods=["POST"])
+@app.route("/api/nearby_places", methods=["POST"])
 def nearby_places():
     data = request.json
     location = data.get("location")
@@ -16,12 +16,13 @@ def nearby_places():
     time.sleep(1)  # enforce 1 request/sec limit for Overpass
     return jsonify({"places": places})
 
-@app.route("/description", methods=["POST"])
+@app.route("/api/description", methods=["POST"])
 def description():
     data = request.json
     place_name = data.get("place_name")
+    location = data.get("location")
     category = data.get("category")
-    description, rating = generate_description_and_rating(place_name, category)
+    description, rating = generate_description_and_rating(place_name, location, category)
     return jsonify({"description": description, "rating": rating})
 
 if __name__ == "__main__":

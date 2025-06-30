@@ -7,6 +7,7 @@ load_dotenv()
 
 client = OpenAI()
 
+# Get latitude and longitude coordinates from a location name 
 def geocode_location(location_name):
     """
     Use OpenStreetMap's Nominatim API to convert a location name to (lat, lon).
@@ -27,6 +28,7 @@ def geocode_location(location_name):
         raise ValueError(f"Could not geocode location: {location_name}")
     return float(data[0]["lat"]), float(data[0]["lon"])
 
+# Return locations of specified type near an area
 def get_nearby_places_osm(location_name, type_of_place, radius=1500):
     """
     Accepts a location name (like 'Paris, France'), geocodes it,
@@ -68,35 +70,12 @@ def get_nearby_places_osm(location_name, type_of_place, radius=1500):
         print(f"Request error: {e}")
         return []
 
-# Usage with rate limit of 1 request per second
-# location = "48.8566,2.3522"  # Paris
-
-# hotels = get_nearby_places_osm(location, "hotel")
-# time.sleep(1)  # comply with OSM usage policy
-# restaurants = get_nearby_places_osm(location, "restaurant")
-# time.sleep(1)
-# attractions = get_nearby_places_osm(location, "tourist_attraction")
-
-# Pretty print names & coordinates
-def summarize_places(places, type):
-    lst = []
-    for el in places:
-        name = el.get("tags", {}).get("name", "Unnamed")
-        lat = el.get("lat") or el.get("center", {}).get("lat")
-        lon = el.get("lon") or el.get("center", {}).get("lon")
-        #print(f"{name}: ({lat}, {lon})")
-        lst.append({"name":name, "category":type})
-    return lst
-
-#hotels = summarize_places(hotels, "hotel")
-#restaurants = summarize_places(restaurants, "restaurant")
-#attractions = summarize_places(attractions, "tourist attraction")
-
-def generate_description_and_rating(place_name, category):
+# Return a description and rating for a given location
+def generate_description_and_rating(place_name, location, category):
     prompt = (
         f"Please provide a description and a rating (1.0-5.0) for the following {category}.\n"
         f"Please separate the description and rating.\n\n"
-        f"{place_name}.\n\n"
+        f"{place_name} located at {location}.\n\n"
         f"Format the response as:\n"
         f"Description: [description text]\n"
         f"Rating: [rating number between 1.0 and 5.0]"
@@ -125,26 +104,3 @@ def generate_description_and_rating(place_name, category):
     except Exception as e:
         print(f"OpenAI error: {e}")
         return None, None
-
-#hotel = hotels[0]
-#description, rating = generate_description_and_rating(hotel["name"], hotel["category"])
-#print(f"{hotel['name']} ({hotel['category']}):\nDescription: {description}\nRating: {rating}\n")
-
-# Example usage for a hotel
-
-# place_name = "Hotel Le Meurice"
-# category = "hotel"
-# description, rating = generate_description_and_rating(place_name, category)
-
-# print(f"Description: {description}")
-# print(f"Rating: {rating}")
-
-# places = [
-#     {"name": "Hotel Le Meurice", "category": "hotel"},
-#     {"name": "Le Bernardin", "category": "restaurant"},
-#     {"name": "Eiffel Tower", "category": "tourist attraction"}
-# ]
-
-# for place in places:
-#     description, rating = generate_description_and_rating(place["name"], place["category"])
-#     print(f"{place['name']} ({place['category']}):\nDescription: {description}\nRating: {rating}\n")
