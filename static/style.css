@@ -219,6 +219,18 @@ span {
     width: 20px;
     height: 20px;
 }
+
+.place-item .hover-image {
+    display: none;
+    width: 300px;
+    margin-top: 8px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+
+.place-item:hover .hover-image {
+    display: block;
+}
 /* Show more buttom */
 .show-more-btn {
     display: inline-block;

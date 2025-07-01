@@ -35,22 +35,63 @@ async function fetchPlaces(location, type) {
     const data = await response.json();
     return data.places || [];
 }
-// Call ChatGPT to get a description and rating for each location
+// Call api to get a description and rating for each location
 async function enrichPlace(element, type) {
     //console.log(element);
     const name = element.tags?.name || "Unnamed";
+    const lat = element.lat || (element.center && element.center.lat) || 0;
+    const lon = element.lon || (element.center && element.center.lon) || 0;
     const descResponse = await fetch("/api/description", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({ place_name: name, location: currentLocation, category: type })
     });
     const descData = await descResponse.json();
+    const imageUrl = await getPlaceImage(element, name, lat, lon);
     return {
         name,
         description: descData.description || "No description available.",
         rating: parseFloat(descData.rating) || 3,
-        coords: element.lat + "," + element.lon || "48.8566,2.3522"
+        coords: lat + "," + lon || "48.8566,2.3522",
+        image: imageUrl
     };
+}
+async function getPlaceImage(element, placeName, lat, lon) {
+    // 1️⃣ Try Wikimedia API
+    try {
+        const wikiResponse = await fetch(`https://en.wikipedia.org/w/api.php?` +
+            new URLSearchParams({
+                action: "query",
+                prop: "pageimages",
+                format: "json",
+                piprop: "original",
+                titles: placeName,
+                origin: "*"
+            })
+        );
+        const wikiData = await wikiResponse.json();
+        const pages = wikiData?.query?.pages || {};
+        for (const pageId in pages) {
+            const page = pages[pageId];
+            if (page?.original?.source) {
+                console.log(`✅ Wikimedia image found for ${placeName}`);
+                return page.original.source;
+            }
+        }
+    } catch (err) {
+        console.error("Wikimedia fetch error:", err);
+    }
+
+    // 2️⃣ Try OSM element's own image tag
+    const osmImage = element?.tags?.image || element?.tags?.wikimedia_commons;
+    if (osmImage) {
+        console.log(`✅ OSM image tag found for ${placeName}`);
+        return osmImage;
+    }
+
+    // 3️⃣ Fallback to static OSM map tile
+    console.log(`⚠️ Using static OSM map for ${placeName}`);
+    return `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lon}&zoom=15&size=400x300&markers=${lat},${lon},red&scale=2`;
 }
 // Creates html for displayed locations
 function createList(location, shown) {
@@ -66,6 +107,7 @@ function createList(location, shown) {
             </div>
             <h4>${item.name} ${getStarRating(item.rating)}</h4>
             <p>${item.description}</p>
+            <img src="${item.image}" alt="Image of ${item.name}" class="hover-image">
         </li>
     `).join('');
 }

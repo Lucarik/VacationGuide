@@ -7,6 +7,7 @@ from ai_routes import get_nearby_places_osm, generate_description_and_rating
 from dotenv import load_dotenv
 
 load_dotenv()  # load .env into environment variables
+# To run use docker-compose up --build
 
 app = Flask(__name__)
 
@@ -49,7 +50,33 @@ def description():
     place_name = data.get("place_name")
     location = data.get("location")
     category = data.get("category")
+    cache_key = f"desc:{place_name}:{location}:{category}"
+
+    # Check Redis cache
+    cached = r.get(cache_key)
+    if cached:
+        print(f"Cache hit for {cache_key}")
+        try:
+            cached_data = json.loads(cached)
+            return jsonify({
+                "description": cached_data.get("description"),
+                "rating": cached_data.get("rating")
+            })
+        except Exception as e:
+            print(f"Cache decode error: {e}")
+
+    # Generate via LLaMA
     description, rating = generate_description_and_rating(place_name, location, category)
+
+    # Safe fallback
+    if not description:
+        description = f"{place_name} is a notable {category} located in {location}."
+    if not rating:
+        rating = "3.5"
+
+    # Cache it for 24 hours
+    r.setex(cache_key, 86400, json.dumps({"description": description, "rating": rating}))
+
     return jsonify({"description": description, "rating": rating})
 
 if __name__ == "__main__":

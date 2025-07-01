@@ -10,7 +10,7 @@ RUN pip install -r requirements.txt
 
 # Copy rest of the app
 COPY . .
-
+ENV PYTHONUNBUFFERED=1
 # Expose and run
 EXPOSE 5000
 CMD ["python", "app.py"]

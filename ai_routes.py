@@ -1,4 +1,5 @@
 import requests
+import re
 from openai import OpenAI
 from dotenv import load_dotenv, dotenv_values 
 load_dotenv()
@@ -25,7 +26,26 @@ def geocode_location(location_name):
     if not data:
         raise ValueError(f"Could not geocode location: {location_name}")
     return float(data[0]["lat"]), float(data[0]["lon"])
-
+    
+def get_country_from_coords(lat, lon):
+    url = "https://nominatim.openstreetmap.org/reverse"
+    params = {
+        "lat": lat,
+        "lon": lon,
+        "format": "json",
+        "zoom": 3,
+    }
+    headers = {"User-Agent": "VacationGuide/1.0 (your@email.com)"}
+    try:
+        response = requests.get(url, params=params, headers=headers, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        country = data.get("address", {}).get("country")
+        print(f"Reverse geocode: ({lat}, {lon}) -> {country}")
+        return country
+    except Exception as e:
+        print(f"Reverse geocode error: {e}")
+        return None
 # Return locations of specified type near an area
 def get_nearby_places_osm(location_name, type_of_place, radius=1500):
     """
@@ -68,37 +88,62 @@ def get_nearby_places_osm(location_name, type_of_place, radius=1500):
         print(f"Request error: {e}")
         return []
 
-# Return a description and rating for a given location
+def parse_response(text):
+    description = None
+    rating = None
+
+    # Try strict line starts
+    for line in text.splitlines():
+        if line.lower().startswith("description:"):
+            description = line.split(":",1)[1].strip()
+        elif line.lower().startswith("rating:"):
+            rating = line.split(":",1)[1].strip()
+
+    # Regex fallback
+    if not description:
+        match = re.search(r"[Dd]escription:\s*(.*)", text)
+        if match:
+            description = match.group(1).strip()
+    if not rating:
+        match = re.search(r"[Rr]ating:\s*([0-9.]+)", text)
+        if match:
+            rating = match.group(1).strip()
+
+    return description, rating
+
+
 def generate_description_and_rating(place_name, location, category):
     prompt = (
-        f"Please provide a description and a rating (1.0-5.0) for the following {category}.\n"
-        f"Please separate the description and rating.\n\n"
-        f"{place_name} located at {location}.\n\n"
-        f"Format the response as:\n"
-        f"Description: [description text]\n"
-        f"Rating: [rating number between 1.0 and 5.0]"
+        f"Please provide a short description (2-3 sentences) and a rating from 1.0 to 5.0 "
+        f"for the following {category}. Format as:\n\n"
+        f"Description: ...\nRating: ...\n\n"
+        f"{place_name} located in {location}."
     )
-    
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "user", "content": prompt}
-        ]
-    )
-    
+
     try:
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": prompt}]
+        response = requests.post(
+            "http://host.docker.internal:11434/api/generate",
+            json={
+                "model": "llama3",
+                "prompt": prompt,
+                "stream": False
+            },
+            timeout=60
         )
-        result_text = response.choices[0].message.content.strip()
-        description, rating = None, None
-        for line in result_text.split("\n"):
-            if line.startswith("Description:"):
-                description = line[len("Description:"):].strip()
-            elif line.startswith("Rating:"):
-                rating = line[len("Rating:"):].strip()
+        response.raise_for_status()
+        data = response.json()
+        content = data.get("response", "")
+
+        description, rating = parse_response(content)
+
+        # Debug output
+        print("----- RAW LLaMA OUTPUT -----")
+        print(content)
+        print("----------------------------")
+        print(f"Parsed -> Description: {description}, Rating: {rating}")
+
         return description, rating
+
     except Exception as e:
-        print(f"OpenAI error: {e}")
+        print(f"⚠️ Ollama error: {e}")
         return None, None
