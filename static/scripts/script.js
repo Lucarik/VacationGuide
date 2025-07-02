@@ -49,7 +49,9 @@ async function enrichPlace(element, type) {
         body: JSON.stringify({ place_name: name, location: currentLocation, category: type })
     });
     const descData = await descResponse.json();
-    const imageUrl = await getPlaceImage(element, name, lat, lon);
+    console.log(descData.rating);
+    let imageUrl = await getPlaceImage(element, name);
+    if (!imageUrl) imageUrl = element.static_map;
     return {
         name,
         description: descData.description || "No description available.",
@@ -59,60 +61,79 @@ async function enrichPlace(element, type) {
     };
 }
 function getWikiLanguagesByCountry(country) {
-    const map = {
-        "France": ["fr", "en", "es", "de"],
-        "Germany": ["de", "en", "fr", "es"],
-        "Spain": ["es", "en", "fr", "de"],
-        "Italy": ["it", "en", "fr", "es"],
-        "Japan": ["ja", "en"],
-        "United States": ["en", "es", "fr"],
+    const countryLangMap = {
+        "France": ["fr", "en"],//, "es", "de"],
+        "Germany": ["de", "en"],//, "fr", "es"],
+        "Spain": ["es", "en"],//, "fr", "de"],
+        "Italy": ["it", "en"],//, "fr", "es"],
+        "Portugal": ["pt", "en"],//, "es"],
+        "Brazil": ["pt", "en"],//, "es"],
         "Canada": ["en", "fr"],
+        "Belgium": ["fr", "nl"],//, "de", "en"],
+        "Netherlands": ["nl", "en"],//, "de", "fr"],
+        "Switzerland": ["de", "fr"],//, "it", "en"],
         "India": ["en", "hi"],
+        "Japan": ["ja", "en"],
+        "China": ["zh", "en"],
+        "Russia": ["ru", "en"],
+        "United States": ["en", "es"],//, "fr"],
+        "United Kingdom": ["en", "fr"],//, "de"],
+        "Mexico": ["es", "en"],
+        "Argentina": ["es", "en"],
+        "Chile": ["es", "en"],
+        "Peru": ["es", "en"],
+        "Australia": ["en", "fr"],
+        "New Zealand": ["en", "mi"],
+        "Turkey": ["tr", "en"],
+        "Egypt": ["ar", "en"],
+        "Morocco": ["fr", "ar"],//, "en"],
+        "South Africa": ["en", "af"],//, "zu"]
     };
-    return map[country] || ["en", "fr", "es", "de"];
+
+    // Fallback for unknown countries
+    return countryLangMap[country] || ["en", "fr", "es", "de"];
 }
 
-async function getPlaceImage(element, placeName, lat, lon) {
+async function getWikiImage(placeName, lang = "en") {
+    try {
+        const apiUrl = `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(placeName)}`;
+        const response = await fetch(apiUrl, {
+            headers: {
+                "Accept": "application/json"
+            }
+        });
+        if (!response.ok) {
+            // console.warn(`No summary found for ${placeName} in ${lang}`);
+            return null;
+        }
+
+        const data = await response.json();
+        if (data.thumbnail && data.thumbnail.source) {
+            return data.thumbnail.source;
+        } else if (data.originalimage && data.originalimage.source) {
+            return data.originalimage.source;
+        }
+        return null;
+    } catch (err) {
+        console.error(`Wiki fetch error for ${placeName} in ${lang}:`, err);
+        return null;
+    }
+}
+
+async function getPlaceImage(element, placeName) {
     const country = window.currentCountry || "United States";
     const languages = getWikiLanguagesByCountry(country);
 
+    const osmImage = element?.tags?.image;
+    if (osmImage) return osmImage;
+
     for (const lang of languages) {
-        try {
-            const wikiResponse = await fetch(`https://${lang}.wikipedia.org/w/api.php?` +
-                new URLSearchParams({
-                    action: "query",
-                    prop: "pageimages",
-                    format: "json",
-                    piprop: "original",
-                    titles: placeName,
-                    origin: "*"
-                })
-            );
-            const wikiData = await wikiResponse.json();
-            const pages = wikiData?.query?.pages || {};
-            for (const pageId in pages) {
-                const page = pages[pageId];
-                if (page?.original?.source) {
-                    console.log(`✅ Found image for ${placeName} in ${lang} wiki`);
-                    return page.original.source;
-                }
-            }
-        } catch (err) {
-            console.error(`Wikipedia ${lang} fetch error:`, err);
-        }
+        const wikiImage = await getWikiImage(placeName, lang);
+        if (wikiImage) return wikiImage;
     }
-
-    // 2️⃣ Try OSM element's own image tag
-    const osmImage = element?.tags?.image || element?.tags?.wikimedia_commons;
-    if (osmImage) {
-        console.log(`✅ OSM image tag found for ${placeName}`);
-        return osmImage;
-    }
-
-    // 3️⃣ Fallback to static OSM map tile
-    console.log(`⚠️ Using static OSM map for ${placeName}`);
-    return `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lon}&zoom=15&size=400x300&markers=${lat},${lon},red&scale=2`;
+    return null;
 }
+
 // Creates html for displayed locations
 function createList(location, shown) {
     return location.slice(0, shown).map((item, index) => `

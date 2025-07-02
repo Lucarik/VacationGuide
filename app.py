@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()  # load .env into environment variables
 # To run use docker-compose up --build
+LOCATIONIQ_KEY = os.getenv("LOCATIONIQ_KEY")
 
 app = Flask(__name__)
 
@@ -40,7 +41,7 @@ def nearby_places():
         print(f"Cache miss for {cache_key}, fetching from Overpass")
         places = get_nearby_places_osm(location, type_of_place)
 
-        # Try to determine country using first place
+        # Determine country
         country = "United States"
         if places:
             first_place = places[0]
@@ -53,11 +54,28 @@ def nearby_places():
 
         # Cache places + country together
         r.setex(cache_key, 3600, json.dumps({"places": places, "country": country}))
+        time.sleep(1)  # Respect Overpass
 
-        time.sleep(1)  # Respect Overpass limit
+    # Now add static map URL for each place in the response
+    enriched_places = []
+    for place in places:
+        lat = place.get("lat") or place.get("center", {}).get("lat")
+        lon = place.get("lon") or place.get("center", {}).get("lon")
+        static_map = None
+        if lat and lon:
+            static_map = (
+                f"https://maps.locationiq.com/v3/staticmap"
+                f"?key={LOCATIONIQ_KEY}&center={lat},{lon}"
+                f"&zoom=15&size=400x300&markers=icon:small-red-cutout|{lat},{lon}"
+            )
+
+        enriched_places.append({
+            **place,
+            "static_map": static_map
+        })
 
     return jsonify({
-        "places": places,
+        "places": enriched_places,
         "country": country
     })
 
