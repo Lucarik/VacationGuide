@@ -258,6 +258,50 @@ span {
     box-shadow: 0 3px 8px rgba(0,0,0,0.2);
 }
 
+/* Loading icon */
+.loader {
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid #0077b6;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.header-loader {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    border: 2px solid #ccc;
+    border-top: 2px solid #0077b6;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    vertical-align: middle;
+    margin-left: 0.5em;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.inline-loader {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ccc;
+    border-top: 2px solid #0077b6;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    vertical-align: middle;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 /* Hover */
 #hover-preview {
     position: fixed;

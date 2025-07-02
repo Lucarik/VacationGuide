@@ -20,20 +20,22 @@
                 <button type="submit">Search</button>
             </form>
         </section>
-
+        <div id="loading-overlay" class="fixed inset-0 flex items-center justify-center bg-white bg-opacity-70 hidden z-50">
+            <div class="loader"></div>
+        </div>
         <section id="results" class="hidden">
             <div class="result-section" id="hotels">
-                <h3>Nearby Hotels</h3>
+                <h3 id="hotel-header">Nearby Hotels <span class="header-loader" style="display:none;"></span></h3>
                 <ul id="hotel-list"></ul>
                 <button id="show-more-hotels" class="show-more-btn">Show More Hotels</button>
             </div>
             <div class="result-section" id="restaurants">
-                <h3>Nearby Restaurants</h3>
+                <h3 id="restaurant-header">Nearby Restaurants <span class="header-loader" style="display:none;"></span></h3>
                 <ul id="restaurant-list"></ul>
                 <button id="show-more-restaurants" class="show-more-btn">Show More Restaurants</button>
             </div>
             <div class="result-section" id="attractions">
-                <h3>Nearby Tourist Attractions</h3>
+                <h3 id="attraction-header">Nearby Tourist Attractions <span class="header-loader" style="display:none;"></span></h3>
                 <ul id="attraction-list"></ul>
                 <button id="show-more-attractions" class="show-more-btn">Show More Attractions</button>
                 
