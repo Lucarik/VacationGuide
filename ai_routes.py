@@ -26,7 +26,6 @@ def geocode_location(location_name):
     if not data:
         raise ValueError(f"Could not geocode location: {location_name}")
     return float(data[0]["lat"]), float(data[0]["lon"])
-    
 def get_country_from_coords(lat, lon):
     url = "https://nominatim.openstreetmap.org/reverse"
     params = {

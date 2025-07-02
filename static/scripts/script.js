@@ -33,6 +33,8 @@ async function fetchPlaces(location, type) {
         body: JSON.stringify({ location, type })
     });
     const data = await response.json();
+    if (!data.country) data.country = "United States";
+    window.currentCountry = data.country;
     return data.places || [];
 }
 // Call api to get a description and rating for each location
@@ -56,30 +58,48 @@ async function enrichPlace(element, type) {
         image: imageUrl
     };
 }
+function getWikiLanguagesByCountry(country) {
+    const map = {
+        "France": ["fr", "en", "es", "de"],
+        "Germany": ["de", "en", "fr", "es"],
+        "Spain": ["es", "en", "fr", "de"],
+        "Italy": ["it", "en", "fr", "es"],
+        "Japan": ["ja", "en"],
+        "United States": ["en", "es", "fr"],
+        "Canada": ["en", "fr"],
+        "India": ["en", "hi"],
+    };
+    return map[country] || ["en", "fr", "es", "de"];
+}
+
 async function getPlaceImage(element, placeName, lat, lon) {
-    // 1️⃣ Try Wikimedia API
-    try {
-        const wikiResponse = await fetch(`https://en.wikipedia.org/w/api.php?` +
-            new URLSearchParams({
-                action: "query",
-                prop: "pageimages",
-                format: "json",
-                piprop: "original",
-                titles: placeName,
-                origin: "*"
-            })
-        );
-        const wikiData = await wikiResponse.json();
-        const pages = wikiData?.query?.pages || {};
-        for (const pageId in pages) {
-            const page = pages[pageId];
-            if (page?.original?.source) {
-                console.log(`✅ Wikimedia image found for ${placeName}`);
-                return page.original.source;
+    const country = window.currentCountry || "United States";
+    const languages = getWikiLanguagesByCountry(country);
+
+    for (const lang of languages) {
+        try {
+            const wikiResponse = await fetch(`https://${lang}.wikipedia.org/w/api.php?` +
+                new URLSearchParams({
+                    action: "query",
+                    prop: "pageimages",
+                    format: "json",
+                    piprop: "original",
+                    titles: placeName,
+                    origin: "*"
+                })
+            );
+            const wikiData = await wikiResponse.json();
+            const pages = wikiData?.query?.pages || {};
+            for (const pageId in pages) {
+                const page = pages[pageId];
+                if (page?.original?.source) {
+                    console.log(`✅ Found image for ${placeName} in ${lang} wiki`);
+                    return page.original.source;
+                }
             }
+        } catch (err) {
+            console.error(`Wikipedia ${lang} fetch error:`, err);
         }
-    } catch (err) {
-        console.error("Wikimedia fetch error:", err);
     }
 
     // 2️⃣ Try OSM element's own image tag

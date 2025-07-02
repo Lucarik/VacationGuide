@@ -3,7 +3,7 @@ import time
 import json
 import redis
 import os
-from ai_routes import get_nearby_places_osm, generate_description_and_rating
+from ai_routes import get_country_from_coords, get_nearby_places_osm, generate_description_and_rating
 from dotenv import load_dotenv
 
 load_dotenv()  # load .env into environment variables
@@ -33,16 +33,33 @@ def nearby_places():
     cached_data = r.get(cache_key)
     if cached_data:
         print(f"Cache hit for {cache_key}")
-        places = json.loads(cached_data)
+        cached_json = json.loads(cached_data)
+        places = cached_json.get("places", [])
+        country = cached_json.get("country", "United States")
     else:
         print(f"Cache miss for {cache_key}, fetching from Overpass")
         places = get_nearby_places_osm(location, type_of_place)
-        r.setex(cache_key, 3600, json.dumps(places))  # Cache for 1 hour
 
-    # Respect Overpass limit
-    time.sleep(1)
+        # Try to determine country using first place
+        country = "United States"
+        if places:
+            first_place = places[0]
+            lat = first_place.get("lat") or first_place.get("center", {}).get("lat")
+            lon = first_place.get("lon") or first_place.get("center", {}).get("lon")
+            if lat and lon:
+                country_result = get_country_from_coords(lat, lon)
+                if country_result:
+                    country = country_result
 
-    return jsonify({"places": places})
+        # Cache places + country together
+        r.setex(cache_key, 3600, json.dumps({"places": places, "country": country}))
+
+        time.sleep(1)  # Respect Overpass limit
+
+    return jsonify({
+        "places": places,
+        "country": country
+    })
 
 @app.route("/api/description", methods=["POST"])
 def description():
