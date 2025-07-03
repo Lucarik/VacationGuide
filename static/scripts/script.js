@@ -17,12 +17,15 @@ document.getElementById("location-form").addEventListener("submit", async functi
     }
     currentLocation = location;
     allHotelsRaw = await fetchPlaces(location, "hotel");
+    document.getElementById("hotel-count").textContent = allHotelsRaw.length;
     document.getElementById("results").classList.remove("hidden");
     document.getElementById("footer").classList.remove("absolute");
     await loadMorePlaces(allHotelsRaw, allHotels, "hotel", "hotel-list", hotelsShown);
     allRestaurantsRaw = await fetchPlaces(location, "restaurant");
+    document.getElementById("restaurant-count").textContent = allRestaurantsRaw.length;
     await loadMorePlaces(allRestaurantsRaw, allRestaurants, "restaurant", "restaurant-list", restaurantsShown);
     allAttractionsRaw = await fetchPlaces(location, "tourist_attraction");
+    document.getElementById("attraction-count").textContent = allAttractionsRaw.length;
     await loadMorePlaces(allAttractionsRaw, allAttractions, "attraction", "attraction-list", attractionsShown);
 });
 // Call OpenStreetMap API and get specified type of locations nearby

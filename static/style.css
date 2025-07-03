@@ -97,6 +97,10 @@ header p {
     margin-bottom: 30px;
 }
 
+#hotel-count, #restaurant-count, #attraction-count {
+    color: #0077b6;
+}
+
 .result-section h3 {
     font-size: 2em;
     margin-bottom: 10px;
