@@ -161,9 +161,12 @@ async function getPlaceImage(element, placeName) {
 // Creates html for displayed locations
 function createSingleListItem(item, index) {
     return `
-        <li class="place-item" style="animation-delay: ${index * 0.1}s;" data-map="https://maps.google.com/?q=${item.coords}">
+        <li class="place-item" 
+            data-image="${item.image}" 
+            style="animation-delay: ${index * 0.1}s;"
+            data-map="https://maps.google.com/?q=${item.coords}">
             <div class="map-link" title="View on Google Maps">
-                <a href="https://maps.google.com/?q=${item.coords}" target="_blank" title="View on Google Maps">
+                <a href="https://maps.google.com/?q=${item.coords}" target="_blank">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 10c0 6-9 13-9 13S3 16 3 10a9 9 0 1 1 18 0z"/>
                         <circle cx="12" cy="10" r="3"/>
@@ -172,7 +175,6 @@ function createSingleListItem(item, index) {
             </div>
             <h4>${item.name} ${getStarRating(item.rating)}</h4>
             <p>${item.description}</p>
-            <img src="${item.image}" alt="Image of ${item.name}" class="hover-image">
         </li>
     `;
 }
@@ -228,4 +230,28 @@ document.getElementById("show-more-restaurants").addEventListener("click", () =>
 
 document.getElementById("show-more-attractions").addEventListener("click", () => {
     loadMorePlaces(allAttractionsRaw, allAttractions, "attraction", "attraction-list", attractionsShown);
+});
+
+// Events for image showing on hover
+document.addEventListener("mousemove", (e) => {
+    const preview = document.getElementById("hover-preview");
+    preview.style.left = e.clientX + "px";
+    preview.style.top = e.clientY + "px";
+});
+
+document.addEventListener("mouseover", (e) => {
+    const li = e.target.closest(".place-item");
+    if (li && li.dataset.image) {
+        const img = document.getElementById("hover-preview-img");
+        img.src = li.dataset.image;
+        img.alt = `Preview of ${li.querySelector("h4").innerText}`;
+        document.getElementById("hover-preview").style.display = "block";
+    }
+});
+
+document.addEventListener("mouseout", (e) => {
+    const li = e.target.closest(".place-item");
+    if (li) {
+        document.getElementById("hover-preview").style.display = "none";
+    }
 });

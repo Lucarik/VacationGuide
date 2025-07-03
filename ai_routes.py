@@ -34,7 +34,7 @@ def get_country_from_coords(lat, lon):
         "format": "json",
         "zoom": 3,
     }
-    headers = {"User-Agent": "VacationGuide/1.0 (your@email.com)"}
+    headers = {"User-Agent": "VacationGuide/1.0 (altacount124@gmail.com)"}
     try:
         response = requests.get(url, params=params, headers=headers, timeout=10)
         response.raise_for_status()
