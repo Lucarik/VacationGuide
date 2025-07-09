@@ -101,7 +101,47 @@ header p {
     color: #0077b6;
 }
 
-.result-section h3 {
+/* Radius dropdown */
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5em;
+}
+
+.header-container h3 {
+    margin: 0;
+    font-size: 1.2em;
+}
+
+.radius-select {
+    margin-right: .8em;
+    padding: 0.4em 0.8em;
+    font-size: 1.3em;
+    color: #0077b6;
+    font-weight: bold;
+    border: 1px solid #bbb;
+    border-radius: 6px;
+    background-color: #f9f9f9;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.radius-select:hover {
+    background-color: #f0f0f0;
+    border-color: #888;
+}
+
+.radius-select:focus {
+    outline: none;
+    border-color: #0077b6; /* primary accent color to match your site */
+    box-shadow: 0 0 3px rgba(0,119,182,0.4);
+}
+
+/* Result Section */
+.header-container h3 {
     font-size: 2em;
     margin-bottom: 10px;
     margin-left: .3em;

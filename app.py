@@ -28,7 +28,9 @@ def nearby_places():
     data = request.json
     location = data.get("location")
     type_of_place = data.get("type")
-    cache_key = f"{location}:{type_of_place}"
+    radius = data.get("radius")
+    #places = get_nearby_places_osm(location, type_of_place, radius=radius)
+    cache_key = f"{location}:{type_of_place}:{radius}"
 
     # Check Redis cache
     cached_data = r.get(cache_key)
@@ -39,7 +41,7 @@ def nearby_places():
         country = cached_json.get("country", "United States")
     else:
         print(f"Cache miss for {cache_key}, fetching from Overpass")
-        places = get_nearby_places_osm(location, type_of_place)
+        places = get_nearby_places_osm(location, type_of_place, radius)
 
         # Determine country
         country = "United States"

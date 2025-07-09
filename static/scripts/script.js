@@ -16,10 +16,11 @@ document.getElementById("location-form").addEventListener("submit", async functi
         return;
     }
     currentLocation = location;
-    allHotelsRaw = await fetchPlaces(location, "hotel");
-    document.getElementById("hotel-count").textContent = allHotelsRaw.length;
+    
     document.getElementById("results").classList.remove("hidden");
     document.getElementById("footer").classList.remove("absolute");
+    allHotelsRaw = await fetchPlaces(location, "hotel");
+    document.getElementById("hotel-count").textContent = allHotelsRaw.length;
     await loadMorePlaces(allHotelsRaw, allHotels, "hotel", "hotel-list", hotelsShown);
     allRestaurantsRaw = await fetchPlaces(location, "restaurant");
     document.getElementById("restaurant-count").textContent = allRestaurantsRaw.length;
@@ -29,7 +30,7 @@ document.getElementById("location-form").addEventListener("submit", async functi
     await loadMorePlaces(allAttractionsRaw, allAttractions, "attraction", "attraction-list", attractionsShown);
 });
 // Call OpenStreetMap API and get specified type of locations nearby
-async function fetchPlaces(location, type) {
+async function fetchPlaces(location, type, radius=1600) {
     const headerLoader = document.querySelector(`#${type}-header .header-loader`);
     if (headerLoader) headerLoader.style.display = "inline-block";
 
@@ -37,7 +38,7 @@ async function fetchPlaces(location, type) {
         const response = await fetch("/api/nearby_places", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ location, type })
+            body: JSON.stringify({ location, type, radius })
         });
         const data = await response.json();
         if (!data.country) data.country = "United States";
@@ -187,20 +188,16 @@ async function loadMorePlaces(allRaw, allProcessed, type, listElementId, shownCo
     const nextBatch = allRaw.slice(shownCount.count, shownCount.count + increment);
     console.log(shownCount.count + increment);
     for (const element of nextBatch) {
-        console.log('good0.5');
         // Add inline loader
         const loadingLi = document.createElement("li");
         loadingLi.innerHTML = `<span class="inline-loader"></span> Loading ${type}...`;
         listEl.appendChild(loadingLi);
-        console.log('good1');
         // Enrich with description & rating & image
         const enriched = await enrichPlace(element, type);
         allProcessed.push(enriched);
         shownCount.count++;
-        console.log('good2');
         // Replace loading with actual item
         loadingLi.outerHTML = createSingleListItem(enriched, shownCount.count - 1);
-        console.log('good3');
         await new Promise(resolve => setTimeout(resolve, 1100));
     }
 
@@ -257,4 +254,35 @@ document.addEventListener("mouseout", (e) => {
     if (li) {
         document.getElementById("hover-preview").style.display = "none";
     }
+});
+
+// Events for radius search dropdown
+document.getElementById("hotel-radius").addEventListener("change", async (e) => {
+    const radius = e.target.value;
+    hotelsShown.count = 0;
+    allHotels = [];
+    allHotelsRaw = await fetchPlaces(currentLocation, "hotel", radius);
+    document.getElementById("hotel-list").innerHTML = "";
+    document.getElementById("hotel-count").textContent = allHotelsRaw.length;
+    await loadMorePlaces(allHotelsRaw, allHotels, "hotel", "hotel-list", hotelsShown);
+});
+
+document.getElementById("restaurant-radius").addEventListener("change", async (e) => {
+    const radius = e.target.value;
+    restaurantsShown.count = 0;
+    allRestaurants = [];
+    allRestaurantsRaw = await fetchPlaces(currentLocation, "restaurant", radius);
+    document.getElementById("restaurant-list").innerHTML = "";
+    document.getElementById("restaurant-count").textContent = allRestaurantsRaw.length;
+    await loadMorePlaces(allRestaurantsRaw, allRestaurants, "restaurant", "restaurant-list", restaurantsShown);
+});
+
+document.getElementById("attraction-radius").addEventListener("change", async (e) => {
+    const radius = e.target.value;
+    attractionsShown.count = 0;
+    allAttractions = [];
+    allAttractionsRaw = await fetchPlaces(currentLocation, "tourist_attraction", radius);
+    document.getElementById("attraction-list").innerHTML = "";
+    document.getElementById("attraction-count").textContent = allAttractionsRaw.length;
+    await loadMorePlaces(allAttractionsRaw, allAttractions, "attraction", "attraction-list", attractionsShown);
 });

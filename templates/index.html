@@ -25,20 +25,57 @@
         </div>
         <section id="results" class="hidden">
             <div class="result-section" id="hotels">
-                <h3 id="hotel-header"><span id="hotel-count"></span> Nearby Hotels <span class="header-loader" style="display:none;"></span></h3>
+                <div class="header-container">
+                    <h3 id="hotel-header">
+                        <span id="hotel-count"></span> Nearby Hotels
+                        <span class="header-loader" style="display:none;"></span>
+                    </h3>
+                    <select id="hotel-radius" class="radius-select">
+                        <option value="800">0.5 Miles</option>
+                        <option value="1600" selected>1 Mile</option>
+                        <option value="3200">2 Miles</option>
+                        <option value="8000">5 Miles</option>
+                        <option value="16000">10 Miles</option>
+                    </select>
+                </div>
                 <ul id="hotel-list"></ul>
                 <button id="show-more-hotels" class="show-more-btn">Show More Hotels</button>
             </div>
+
             <div class="result-section" id="restaurants">
-                <h3 id="restaurant-header"><span id="restaurant-count"></span> Nearby Restaurants <span class="header-loader" style="display:none;"></span></h3>
+                <div class="header-container">
+                    <h3 id="restaurant-header">
+                        <span id="restaurant-count"></span> Nearby Restaurants
+                        <span class="header-loader" style="display:none;"></span>
+                    </h3>
+                    <select id="restaurant-radius" class="radius-select">
+                        <option value="800">0.5 Miles</option>
+                        <option value="1600" selected>1 Mile</option>
+                        <option value="3200">2 Miles</option>
+                        <option value="8000">5 Miles</option>
+                        <option value="16000">10 Miles</option>
+                    </select>
+                </div>
                 <ul id="restaurant-list"></ul>
                 <button id="show-more-restaurants" class="show-more-btn">Show More Restaurants</button>
             </div>
+
             <div class="result-section" id="attractions">
-                <h3 id="attraction-header"><span id="attraction-count"></span> Nearby Tourist Attractions <span class="header-loader" style="display:none;"></span></h3>
+                <div class="header-container">
+                    <h3 id="attraction-header">
+                        <span id="attraction-count"></span> Nearby Tourist Attractions
+                        <span class="header-loader" style="display:none;"></span>
+                    </h3>
+                    <select id="attraction-radius" class="radius-select">
+                        <option value="800">0.5 Miles</option>
+                        <option value="1600" selected>1 Mile</option>
+                        <option value="3200">2 Miles</option>
+                        <option value="8000">5 Miles</option>
+                        <option value="16000">10 Miles</option>
+                    </select>
+                </div>
                 <ul id="attraction-list"></ul>
                 <button id="show-more-attractions" class="show-more-btn">Show More Attractions</button>
-                
             </div>
         </section>
         
@@ -48,6 +85,5 @@
         <div id="hover-preview" style="display: none;">
             <img id="hover-preview-img" src="" alt="Preview" />
         </div>
-        <!-- <script src="../scripts/script.js"></script> -->
     </body>
 </html>
