@@ -177,7 +177,7 @@ function createSingleListItem(item, index) {
                     </svg>
                 </a>
             </div>
-            <h4>${item.name} ${getStarRating(item.rating)}</h4>
+            <h4 class="location-name">${item.name} ${getStarRating(item.rating)}</h4>
             <p>${item.description}</p>
         </li>
     `;
@@ -285,4 +285,18 @@ document.getElementById("attraction-radius").addEventListener("change", async (e
     document.getElementById("attraction-list").innerHTML = "";
     document.getElementById("attraction-count").textContent = allAttractionsRaw.length;
     await loadMorePlaces(allAttractionsRaw, allAttractions, "attraction", "attraction-list", attractionsShown);
+});
+
+const toggleBtn = document.getElementById("theme-toggle");
+const toggleLabel = toggleBtn.querySelector(".toggle-label");
+
+toggleBtn.addEventListener("click", () => {
+    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+    if (isDark) {
+        document.documentElement.removeAttribute("data-theme");
+        toggleLabel.textContent = "Light Mode";
+    } else {
+        document.documentElement.setAttribute("data-theme", "dark");
+        toggleLabel.textContent = "Dark Mode";
+    }
 });
