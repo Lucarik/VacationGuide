@@ -177,9 +177,12 @@ function createSingleListItem(item, index) {
             data-map="https://maps.google.com/?q=${item.coords}">
             <div class="map-link" title="View on Google Maps">
                 <a href="https://maps.google.com/?q=${item.coords}" target="_blank">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 10c0 6-9 13-9 13S3 16 3 10a9 9 0 1 1 18 0z"/>
-                        <circle cx="12" cy="10" r="3"/>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" height="20" width="20" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <!-- Light green background -->
+                    <rect x="1" y="1" width="22" height="22" fill="#e6f2ea" rx="3" ry="3"/>
+                    <!-- Red pin -->
+                    <path d="M21 10c0 6-9 13-9 13S3 16 3 10a9 9 0 1 1 18 0z" fill="#e74c3c" stroke="#c0392b" stroke-width="1.5"/>
+                    <circle cx="12" cy="10" r="3" fill="#fff" stroke="#c0392b" stroke-width="1"/>
                     </svg>
                 </a>
             </div>
