@@ -22,13 +22,17 @@ document.getElementById("location-form").addEventListener("submit", async functi
     allHotelsRaw = await fetchPlaces(location, "hotel");
     document.getElementById("hotel-count").textContent = allHotelsRaw.length;
     await loadMorePlaces(allHotelsRaw, allHotels, "hotel", "hotel-list", hotelsShown);
+    document.getElementById("show-more-hotels").classList.remove("hidden");
     allRestaurantsRaw = await fetchPlaces(location, "restaurant");
     document.getElementById("restaurant-count").textContent = allRestaurantsRaw.length;
     await loadMorePlaces(allRestaurantsRaw, allRestaurants, "restaurant", "restaurant-list", restaurantsShown);
+    document.getElementById("show-more-restaurants").classList.remove("hidden");
     allAttractionsRaw = await fetchPlaces(location, "tourist_attraction");
     document.getElementById("attraction-count").textContent = allAttractionsRaw.length;
     await loadMorePlaces(allAttractionsRaw, allAttractions, "attraction", "attraction-list", attractionsShown);
+    document.getElementById("show-more-attractions").classList.remove("hidden");
 });
+
 // Call OpenStreetMap API and get specified type of locations nearby
 async function fetchPlaces(location, type, radius=1600) {
     const headerLoader = document.querySelector(`#${type}-header .header-loader`);
@@ -48,8 +52,9 @@ async function fetchPlaces(location, type, radius=1600) {
         if (headerLoader) headerLoader.style.display = "none";
     }
 }
-// Call api to get a description and rating for each location
-async function enrichPlace(element, type) {
+
+// Call llama api to get a description and rating for each location
+async function ratePlace(element, type) {
     const headerLoader = document.querySelector(`#${type}-header .header-loader`);
     if (headerLoader) headerLoader.style.display = "inline-block";
 
@@ -76,7 +81,7 @@ async function enrichPlace(element, type) {
             image: imageUrl
         };
     } catch (e) {
-        console.error("Error enriching place:", e);
+        console.error("Error getting description and rating for location:", e);
         return {
             name,
             description: "No description available.",
@@ -88,6 +93,7 @@ async function enrichPlace(element, type) {
         if (headerLoader) headerLoader.style.display = "none";
     }
 }
+// Helper function to only check Wikipedia pages of relevent languages for country
 function getWikiLanguagesByCountry(country) {
     const countryLangMap = {
         "France": ["fr", "en"],//, "es", "de"],
@@ -121,7 +127,7 @@ function getWikiLanguagesByCountry(country) {
     // Fallback for unknown countries
     return countryLangMap[country] || ["en", "fr", "es", "de"];
 }
-
+// Helper function for getting images of location from Wikipedia
 async function getWikiImage(placeName, lang = "en") {
     try {
         const apiUrl = `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(placeName)}`;
@@ -147,7 +153,7 @@ async function getWikiImage(placeName, lang = "en") {
         return null;
     }
 }
-
+// Gets image for a location
 async function getPlaceImage(element, placeName) {
     const country = window.currentCountry || "United States";
     const languages = getWikiLanguagesByCountry(country);
@@ -182,7 +188,7 @@ function createSingleListItem(item, index) {
         </li>
     `;
 }
-// Increase number of hotels displayed
+// Increase number of locations displayed
 async function loadMorePlaces(allRaw, allProcessed, type, listElementId, shownCount, increment = 3) {
     const listEl = document.getElementById(listElementId);
     const nextBatch = allRaw.slice(shownCount.count, shownCount.count + increment);
@@ -192,16 +198,13 @@ async function loadMorePlaces(allRaw, allProcessed, type, listElementId, shownCo
         const loadingLi = document.createElement("li");
         loadingLi.innerHTML = `<span class="inline-loader"></span> Loading ${type}...`;
         listEl.appendChild(loadingLi);
-        // Enrich with description & rating & image
-        const enriched = await enrichPlace(element, type);
-        allProcessed.push(enriched);
+        const descriptionAndRating = await ratePlace(element, type);
+        allProcessed.push(descriptionAndRating);
         shownCount.count++;
         // Replace loading with actual item
-        loadingLi.outerHTML = createSingleListItem(enriched, shownCount.count - 1);
+        loadingLi.outerHTML = createSingleListItem(descriptionAndRating, shownCount.count - 1);
         await new Promise(resolve => setTimeout(resolve, 1100));
     }
-
-    // Hide "Show more" button if needed
     if (shownCount.count >= allRaw.length) {
         document.getElementById(`show-more-${type}s`).style.display = "none";
     } else {
@@ -286,7 +289,7 @@ document.getElementById("attraction-radius").addEventListener("change", async (e
     document.getElementById("attraction-count").textContent = allAttractionsRaw.length;
     await loadMorePlaces(allAttractionsRaw, allAttractions, "attraction", "attraction-list", attractionsShown);
 });
-
+// Events for dark mode toggle button
 const toggleBtn = document.getElementById("theme-toggle");
 const toggleLabel = toggleBtn.querySelector(".toggle-label");
 

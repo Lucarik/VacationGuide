@@ -26,6 +26,7 @@ def geocode_location(location_name):
     if not data:
         raise ValueError(f"Could not geocode location: {location_name}")
     return float(data[0]["lat"]), float(data[0]["lon"])
+# Return what country input coordinates belong to
 def get_country_from_coords(lat, lon):
     url = "https://nominatim.openstreetmap.org/reverse"
     params = {
@@ -53,7 +54,7 @@ def get_nearby_places_osm(location_name, type_of_place, radius=1500):
     """
     lat, lon = geocode_location(location_name)
     
-    # Map your type_of_place to OSM tags
+    # Map type_of_place to OSM tags
     osm_mapping = {
         "hotel": '["tourism"="hotel"]',
         "restaurant": '["amenity"="restaurant"]',
@@ -134,12 +135,6 @@ def generate_description_and_rating(place_name, location, category):
         content = data.get("response", "")
 
         description, rating = parse_response(content)
-
-        # Debug output
-        print("----- RAW LLaMA OUTPUT -----")
-        print(content)
-        print("----------------------------")
-        print(f"Parsed -> Description: {description}, Rating: {rating}")
 
         return description, rating
 

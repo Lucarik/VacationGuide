@@ -19,10 +19,12 @@ redis_db = int(os.getenv("REDIS_DB", 0))
 
 r = redis.Redis(host=redis_host, port=redis_port, db=redis_db, decode_responses=True)
 
+# Main page
 @app.route("/")
 def index():
     return render_template("index.html")
 
+# Call OSM api to return hotels/restaurants/attractions close to input location
 @app.route("/api/nearby_places", methods=["POST"])
 def nearby_places():
     data = request.json
@@ -59,7 +61,7 @@ def nearby_places():
         time.sleep(1)  # Respect Overpass
 
     # Now add static map URL for each place in the response
-    enriched_places = []
+    formatted_places = []
     for place in places:
         lat = place.get("lat") or place.get("center", {}).get("lat")
         lon = place.get("lon") or place.get("center", {}).get("lon")
@@ -71,16 +73,17 @@ def nearby_places():
                 f"&zoom=15&size=400x300&markers=icon:small-red-cutout|{lat},{lon}"
             )
 
-        enriched_places.append({
+        formatted_places.append({
             **place,
             "static_map": static_map
         })
 
     return jsonify({
-        "places": enriched_places,
+        "places": formatted_places,
         "country": country
     })
 
+# Call llama3 to generate a description and rating for desired location
 @app.route("/api/description", methods=["POST"])
 def description():
     data = request.json

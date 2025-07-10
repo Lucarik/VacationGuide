@@ -98,7 +98,7 @@ header p {
 }
 
 #hotel-count, #restaurant-count, #attraction-count {
-    color: #398dc5;
+    color: #2a648a;
 }
 
 /* Radius dropdown */
@@ -277,7 +277,8 @@ header p {
 }
 /* Show more buttom */
 .show-more-btn {
-    display: inline-block;
+    /* display: inline-block; */
+    display: none;
     margin: 1rem auto;
     padding: 0.6rem 1.2rem;
     font-size: 1rem;
@@ -505,6 +506,9 @@ footer p {
 /* Results headers */
 [data-theme="dark"] .header-container h3 {
     color: #1d93d2;
+}
+[data-theme="dark"] #hotel-count, #restaurant-count, #attraction-count {
+    color: #3eb0ed;;
 }
 
 /* List items */
