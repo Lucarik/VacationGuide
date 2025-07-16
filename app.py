@@ -3,7 +3,7 @@ import time
 import json
 import redis
 import os
-from ai_routes import get_country_from_coords, get_nearby_places_osm, generate_description_and_rating
+from api_routes import get_country_from_coords, get_nearby_places_osm, generate_description_and_rating
 from dotenv import load_dotenv
 
 load_dotenv()  # load .env into environment variables
@@ -60,7 +60,7 @@ def nearby_places():
         r.setex(cache_key, 3600, json.dumps({"places": places, "country": country}))
         time.sleep(1)  # Respect Overpass
 
-    # Now add static map URL for each place in the response
+    # Add static map URL for each place in response
     formatted_places = []
     for place in places:
         lat = place.get("lat") or place.get("center", {}).get("lat")
@@ -105,17 +105,17 @@ def description():
         except Exception as e:
             print(f"Cache decode error: {e}")
 
-    # Generate via LLaMA
+    # Generate via LLaMA3
     description, rating = generate_description_and_rating(place_name, location, category)
 
-    # Safe fallback
+    # Fallback description
     if not description:
         description = f"{place_name} is a notable {category} located in {location}."
     if not rating:
         rating = "3.5"
 
-    # Cache it for 24 hours
-    r.setex(cache_key, 86400, json.dumps({"description": description, "rating": rating}))
+    # Cache result for 72 hours
+    r.setex(cache_key, 259200, json.dumps({"description": description, "rating": rating}))
 
     return jsonify({"description": description, "rating": rating})
 

@@ -1,3 +1,4 @@
+// Initialize location lists
 let allHotelsRaw = [], allRestaurantsRaw = [], allAttractionsRaw = [];
 let allHotels = [], allRestaurants = [], allAttractions = [];
 const hotelsShown = { count: 0 }, restaurantsShown = { count: 0 }, attractionsShown = { count: 0 };
@@ -217,7 +218,7 @@ async function loadMorePlaces(allRaw, allProcessed, type, listElementId, shownCo
 // Display the rating of the current location
 function getStarRating(rating) {
     const clampedRating = Math.max(0, Math.min(5, rating));
-    const percentage = (clampedRating / 5) * 100;
+    const percentage = (clampedRating / 5) * 98;
     return `
         <span class="star-rating">
             <span class="star-fill" style="width: ${percentage}%;">★★★★★</span>
